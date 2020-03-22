@@ -2,7 +2,6 @@ const express = require('express')
 const mongoUtil = require('../mongoUtil')
 const jwt = require('jsonwebtoken');
 
-let doctorDb = mongoUtil.getDoctorDb()
 let patientDb = mongoUtil.getPatientDb()
 
 const passport = require('passport')

@@ -1,19 +1,13 @@
 const express = require('express')
 const mongoUtil = require('../mongoUtil')
-const jwt = require('jsonwebtoken');
 
 let doctorDb = mongoUtil.getDoctorDb()
 let patientDb = mongoUtil.getPatientDb()
-
-const passport = require('passport')
 
 let auth = require('../auth')
 
 const router = express.Router()
 
-router.get('/', (req, res) => {
-    res.send('Hello World')
-})
 
 router.get('/:username/', auth.required, (req, res) => {
     const { payload: { username } } = req;
@@ -47,7 +41,7 @@ router.get('/:username/week/:week', auth.required, (req, res) => {
     });
 })
 
-router.post('/treatment/save', auth.required, (req, res, next) => {
+router.post('/save', auth.required, (req, res, next) => {
   if(!("username" in req.body)){
     return res.status(400).json({
       errors: {
@@ -55,29 +49,32 @@ router.post('/treatment/save', auth.required, (req, res, next) => {
       }
     })
   }
-  else if(!("uv" in req.body)){
+  else if(!("startDate" in req.body)){
     return res.status(400).json({
       errors: {
-        uv: 'not found',
+        startDate: 'not found',
       }
     })
   }
-  else if(!("date" in req.body)){
+  else if(!("skin" in req.body)){
     return res.status(400).json({
       errors: {
-        date: 'not found',
-      }
-    })
-  }
-  else if(!("week" in req.body)){
-    return res.status(400).json({
-      errors: {
-        week: 'not found',
+        skin: 'not found',
       }
     })
   }
   else{
-    db.collection('uv_log').update({date:req.body.date},req.body,{upsert:true}).then(()=>{
+
+    const skinMaxEUVMapping = {1:10 , 2:30 , 3:50 , 4:70 , 5:90};
+
+    const update = {
+      "startDate": req.body.startDate,
+      "skin": req.body.skin,
+      "maxEUV": skinMaxEUVMapping[parseInt(req.body.skin)]
+    }
+
+    patientDb.collection('user').updateOne({username : req.body.username},{$set : update},{upsert:false})
+    .then(()=>{
       return res.status(201).json({save:"success"})
     })
   }
