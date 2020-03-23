@@ -8,40 +8,61 @@ let auth = require('../auth')
 
 const router = express.Router()
 
+const skinMaxEUVMapping = {1:10 , 2:30 , 3:50 , 4:70 , 5:90};
 
-router.get('/:username/', auth.required, (req, res) => {
-    const { payload: { username } } = req;
-
-    return patientDb.collection('user').find({username:username}).toArray()
-      .then((userLog) => {
-        if(!userLog) {
-          return res.sendStatus(400);
-        }
-        let logArray = []
-        userLog.forEach(element => {
-          console.log(element)
-          logArray.push(element)
-        });
+//Case add new patient
+router.post('/addpatient',auth.required, (req, res, next) => {
   
-        return res.json(logArray);
-      });
-})
-
-
-router.get('/:username/week/:week', auth.required, (req, res) => {
-  const { username,week } = req.params;
-
-  return db.collection('uv_log').find({username:username,week:Number(week)}).toArray()
-    .then((userLog) => {
-      if(!userLog) {
-        return res.sendStatus(400);
+  if(!("doctor" in req.body)){
+    return res.status(400).json({
+      errors: {
+        doctor: 'not found',
       }
+    })
+  }
+  else if(!("username" in req.body)){
+    return res.status(400).json({
+      errors: {
+        username: 'not found',
+      }
+    })
+  }
+  else if(!("startDate" in req.body)){
+    return res.status(400).json({
+      errors: {
+        startDate: 'not found',
+      }
+    })
+  }
+  else if(!("skin" in req.body)){
+    return res.status(400).json({
+      errors: {
+        skin: 'not found',
+      }
+    })
+  }
+  else{
 
-      return res.json(userLog);
-    });
+    const update = {
+      "doctor": req.body.doctor,
+      "startDate": req.body.startDate,
+      "skin": parseInt(req.body.skin),
+      "maxEUV": skinMaxEUVMapping[parseInt(req.body.skin)]
+    }
+
+    patientDb.collection('user').updateOne({username : req.body.username},{$set : update},{upsert:false})
+    .then(()=>{
+      doctorDb.collection('user').updateOne({username : req.body.doctor},{$push : {patients : req.body.username}})
+    })
+    .then(()=>{
+      return res.status(201).json({create:"success"})
+    })
+  }
+
 })
 
-router.post('/save', auth.required, (req, res, next) => {
+//Case edit patient data
+router.post('/save', auth.required, (req, res, next) => { 
   if(!("username" in req.body)){
     return res.status(400).json({
       errors: {
@@ -65,11 +86,9 @@ router.post('/save', auth.required, (req, res, next) => {
   }
   else{
 
-    const skinMaxEUVMapping = {1:10 , 2:30 , 3:50 , 4:70 , 5:90};
-
     const update = {
       "startDate": req.body.startDate,
-      "skin": req.body.skin,
+      "skin": parseInt(req.body.skin),
       "maxEUV": skinMaxEUVMapping[parseInt(req.body.skin)]
     }
 
