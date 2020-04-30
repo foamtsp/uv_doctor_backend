@@ -67,7 +67,7 @@ router.post('/login', auth.optional, (req, res, next) => {
 
 
 //Case getallpatients
-router.get('/:username/getpatients', auth.required, (req, res, next) => {
+router.get('/:username/getpatients', auth.optional, (req, res, next) => {
     const doctor = req.params;
     
 
