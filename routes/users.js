@@ -69,9 +69,11 @@ router.post('/login', auth.optional, (req, res, next) => {
 //Case getallpatients
 router.get('/:username/getpatients', auth.required, (req, res, next) => {
     const doctor = req.params;
+    
 
-    patientDb.collection('user').find({doctor:doctor}).toArray()
+    patientDb.collection('user').find({doctor:doctor.username}).toArray()
     .then((patients) => {
+      console.log(patients)
       if(!patients) {
         return res.sendStatus(400);
       }
