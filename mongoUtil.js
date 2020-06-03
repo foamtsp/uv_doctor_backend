@@ -1,15 +1,21 @@
 `use strict`;
 
+const dotenv = require('dotenv');
 const MongoClient = require('mongodb').MongoClient;
+
+// ENV configuration
+dotenv.config({
+  path: './config.env'
+});
 
 let doctor_database
 let patient_database 
 
-let USER = ""
-let PWD = ""
-
 connection = (callback) => {
-  const uri = "mongodb+srv://"+ USER + ":"+ PWD + "@cluster0-47qvl.gcp.mongodb.net/test?retryWrites=true&w=majority";
+  const uri = process.env.DATABASE.replace(
+    '<PASSWORD>',
+    process.env.DATABASE_PASSWORD
+);
   const client = new MongoClient(uri, { keepAlive: 1,useUnifiedTopology: true,useNewUrlParser: true });
   client.connect((err,client) => {
     if (err){
