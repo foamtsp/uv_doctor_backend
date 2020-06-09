@@ -1,5 +1,7 @@
 const express = require('express')
 const mongoUtil = require('../mongoUtil')
+const generator = require('generate-password');
+ 
 
 let doctorDb = mongoUtil.getDoctorDb()
 let patientDb = mongoUtil.getPatientDb()
@@ -8,10 +10,11 @@ let auth = require('../auth')
 
 const router = express.Router()
 
-const skinMaxEUVMapping = {1:10 , 2:30 , 3:50 , 4:70 , 5:90};
+const skinMaxEUVMapping = {1:10 , 2:30 , 3:50 , 4:70 , 5:90, 6:100};
 
 //Case add new patient
-router.post('/addpatient',auth.required, (req, res, next) => {
+router.post('/addpatient', auth.required, (req, res, next) => {
+  
   
   if(!("doctor" in req.body)){
     return res.status(400).json({
@@ -20,10 +23,45 @@ router.post('/addpatient',auth.required, (req, res, next) => {
       }
     })
   }
-  else if(!("username" in req.body)){
+  else if(!("firstname" in req.body)){
     return res.status(400).json({
       errors: {
-        username: 'not found',
+        firstname: 'not found',
+      }
+    })
+  }
+  else if(req.body.firstname.length <= 50){
+    return res.status(400).json({
+      errors: {
+        firstname: 'Firstname is too long',
+      }
+    })
+  }
+  else if(!("lastname" in req.body)){
+    return res.status(400).json({
+      errors: {
+        lastname: 'not found',
+      }
+    })
+  }
+  else if(req.body.lastname.length <= 50){
+    return res.status(400).json({
+      errors: {
+        lasttname: 'Lastname is too long',
+      }
+    })
+  }
+  else if(!("birthDate" in req.body)){
+    return res.status(400).json({
+      errors: {
+        birthDate: 'not found',
+      }
+    })
+  }
+  else if(new Date(req.body.birthDate) > new Date()){
+    return res.status(400).json({
+      errors: {
+        birthDate: 'Birthdate should be in the past',
       }
     })
   }
@@ -41,18 +79,40 @@ router.post('/addpatient',auth.required, (req, res, next) => {
       }
     })
   }
+  else if(!(req.body.skin >= 1 && req.body.skin <= 6)){
+    return res.status(400).json({
+      errors: {
+        skin: 'skin type is not correct',
+      }
+    })
+  }
   else{
 
-    const update = {
-      "doctor": req.body.doctor,
-      "startDate": req.body.startDate,
+
+    let username = generator.generate({
+      length: 10,
+      numbers: true
+    });
+
+    let password = generator.generate({
+      length: 12,
+      numbers: true
+    });
+
+    const newPatient = {
+      "username": username,
+      "password": password,
+      "firstname": req.body.firstname,
+      "lastname": req.body.lastname,
+      "birthDate": new Date(req.body.birthDate),
+      "startDate": new Date(req.body.startDate),
       "skin": parseInt(req.body.skin),
       "maxEUV": skinMaxEUVMapping[parseInt(req.body.skin)]
     }
 
-    patientDb.collection('user').updateOne({username : req.body.username},{$set : update},{upsert:false})
-    .then(()=>{
-      doctorDb.collection('user').updateOne({username : req.body.doctor},{$push : {patients : req.body.username}})
+    patientDb.collection('user').insertOne(newPatient)
+    .then((value)=>{
+      doctorDb.collection('user').updateOne({username : req.body.doctor},{$push : {patients : value.insertedId}})
     })
     .then(()=>{
       return res.status(201).json({create:"success"})
@@ -84,15 +144,25 @@ router.post('/save', auth.required, (req, res, next) => {
       }
     })
   }
+  else if(!(req.body.skin >= 1 && req.body.skin <= 6)){
+    return res.status(400).json({
+      errors: {
+        skin: 'skin type is not correct',
+      }
+    })
+  }
   else{
 
     const update = {
-      "startDate": req.body.startDate,
+      "startDate": new Date(req.body.startDate),
       "skin": parseInt(req.body.skin),
       "maxEUV": skinMaxEUVMapping[parseInt(req.body.skin)]
     }
 
     patientDb.collection('user').updateOne({username : req.body.username},{$set : update},{upsert:false})
+    .catch(error => {
+      return res.status(203).json({save:"failed"})
+    })
     .then(()=>{
       return res.status(201).json({save:"success"})
     })
