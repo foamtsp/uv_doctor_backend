@@ -115,7 +115,11 @@ router.post('/addpatient', auth.required, (req, res, next) => {
       doctorDb.collection('user').updateOne({username : req.body.doctor},{$push : {patients : value.insertedId}})
     })
     .then(()=>{
-      return res.status(201).json({create:"success"})
+      return res.status(201).json({
+        create:"success",
+        username: username,
+        password: password
+      })
     })
   }
 
