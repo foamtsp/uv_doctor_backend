@@ -28,7 +28,12 @@ router.get('/login', auth.required, (req, res, next) => {
         patients: user.patients,
       }});
   }
- 
+  else {
+    return res.status(400).json({ 
+      user: {
+        status: 'pls login first'
+      }});
+  }
 })
 
 //Case login

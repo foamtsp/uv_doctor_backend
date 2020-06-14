@@ -145,6 +145,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
 
 //Case edit patient data
 router.post('/save', auth.required, (req, res, next) => { 
+  
   if(!("username" in req.body)){
     return res.status(400).json({
       errors: {
@@ -166,7 +167,7 @@ router.post('/save', auth.required, (req, res, next) => {
       }
     })
   }
-  else if(!(req.body.skin >= 1 && req.body.skin <= 6)){
+  else if((parseInt(req.body.skin) < 1 || parseInt(req.body.skin) > 6)){
     return res.status(400).json({
       errors: {
         skin: 'skin type is not correct',
