@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoUtil = require('../mongoUtil')
 const generator = require('generate-password');
-const crypto = require("crypto-js")
+const CryptoJS = require("crypto-js")
  
 
 let doctorDb = mongoUtil.getDoctorDb()
@@ -17,7 +17,6 @@ const skinMaxEUVMapping = {1:10 , 2:30 , 3:50 , 4:70 , 5:90, 6:100};
 router.post('/addpatient', auth.required, (req, res, next) => {
   
   if(!("doctor" in req.body)){
-
     return res.status(400).json({
       errors: {
         doctor: 'not found',
@@ -31,7 +30,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
       }
     })
   }
-  else if(req.body.firstname.length >= 50){
+  else if(req.body.firstname.length > 50){
 
     return res.status(400).json({
       errors: {
@@ -47,7 +46,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
       }
     })
   }
-  else if(req.body.lastname.length >= 50){
+  else if(req.body.lastname.length > 50){
 
     return res.status(400).json({
       errors: {
@@ -107,7 +106,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
     });
 
     const newPatient = {
-      "doctor":req.body.doctor,
+      "doctor": req.body.doctor,
       "username": username,
       "password": password,
       "firstname": req.body.firstname,
@@ -120,7 +119,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
 
     patientDb.collection('user').insertOne(newPatient)
     .then((value)=>{
-      doctorDb.collection('user').updateOne({username : req.body.doctor},{$push : {patients : value.insertedId}})
+      doctorDb.collection('user').updateOne({_id : req.body.doctor},{$push : {patients : value.insertedId}})
     })
     .then(()=>{
 
