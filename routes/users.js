@@ -14,6 +14,23 @@ router.get('/', (req, res) => {
     res.send('Hello World')
 })
 
+router.get('/login', auth.required, (req, res, next) => {
+  let token = null;
+  const { headers: { authorization } } = req;
+  if(authorization && authorization.split(' ')[0] === 'Token') {
+    token =  authorization.split(' ')[1];
+    var user = jwt.verify(token, 'secret');
+
+    return res.status(200).json({ 
+      user: {
+        _id: user.id,
+        username: user.username,
+        patients: user.patients,
+      }});
+  }
+ 
+})
+
 //Case login
 router.post('/login', auth.optional, (req, res, next) => {
     const user = req.body
@@ -67,7 +84,7 @@ router.post('/login', auth.optional, (req, res, next) => {
 
 
 //Case getallpatients
-router.get('/:_id/getpatients', auth.optional, (req, res, next) => {
+router.get('/:_id/getpatients', auth.required, (req, res, next) => {
     const doctor = req.params;
     // console.log(patientDb.collection('user'))
     
