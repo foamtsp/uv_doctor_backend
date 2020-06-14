@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoUtil = require('../mongoUtil')
 const generator = require('generate-password');
+const crypto = require("crypto-js")
  
 
 let doctorDb = mongoUtil.getDoctorDb()
@@ -115,10 +116,21 @@ router.post('/addpatient', auth.required, (req, res, next) => {
       doctorDb.collection('user').updateOne({username : req.body.doctor},{$push : {patients : value.insertedId}})
     })
     .then(()=>{
+
+      let newUser = {
+        'username': username,
+        'password' : password
+      }
+
+      let encryptUser = CryptoJS.AES.encrypt(JSON.stringify(newUser), process.env.SECRET_KEY).toString();
+      
+      // // DECRYPT USER CODE
+      // var bytes  = CryptoJS.AES.decrypt(encryptUser, process.env.SECRET_KEY);
+      // var user = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
       return res.status(201).json({
         create:"success",
-        username: username,
-        password: password
+        encryptUser: encryptUser
       })
     })
   }
