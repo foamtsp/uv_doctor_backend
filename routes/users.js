@@ -69,11 +69,11 @@ router.post('/login', auth.optional, (req, res, next) => {
 //Case getallpatients
 router.get('/:username/getpatients', auth.optional, (req, res, next) => {
     const doctor = req.params;
+    console.log(patientDb.collection('user'))
     
 
     patientDb.collection('user').find({doctor:doctor.username}).toArray()
     .then((patients) => {
-      console.log(patients)
       if(!patients) {
         return res.sendStatus(400);
       }
@@ -81,6 +81,8 @@ router.get('/:username/getpatients', auth.optional, (req, res, next) => {
       patients.forEach(patient => {
         patientArray.push(patient)
       });
+      console.log(patientArray)
+
 
       return res.json(patientArray);
     });

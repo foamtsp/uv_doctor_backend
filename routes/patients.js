@@ -15,8 +15,8 @@ const skinMaxEUVMapping = {1:10 , 2:30 , 3:50 , 4:70 , 5:90, 6:100};
 //Case add new patient
 router.post('/addpatient', auth.required, (req, res, next) => {
   
-  
   if(!("doctor" in req.body)){
+
     return res.status(400).json({
       errors: {
         doctor: 'not found',
@@ -30,7 +30,8 @@ router.post('/addpatient', auth.required, (req, res, next) => {
       }
     })
   }
-  else if(req.body.firstname.length <= 50){
+  else if(req.body.firstname.length >= 50){
+
     return res.status(400).json({
       errors: {
         firstname: 'Firstname is too long',
@@ -38,13 +39,15 @@ router.post('/addpatient', auth.required, (req, res, next) => {
     })
   }
   else if(!("lastname" in req.body)){
+
     return res.status(400).json({
       errors: {
         lastname: 'not found',
       }
     })
   }
-  else if(req.body.lastname.length <= 50){
+  else if(req.body.lastname.length >= 50){
+
     return res.status(400).json({
       errors: {
         lasttname: 'Lastname is too long',
@@ -52,6 +55,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
     })
   }
   else if(!("birthDate" in req.body)){
+
     return res.status(400).json({
       errors: {
         birthDate: 'not found',
@@ -59,6 +63,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
     })
   }
   else if(new Date(req.body.birthDate) > new Date()){
+
     return res.status(400).json({
       errors: {
         birthDate: 'Birthdate should be in the past',
@@ -80,6 +85,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
     })
   }
   else if(!(req.body.skin >= 1 && req.body.skin <= 6)){
+
     return res.status(400).json({
       errors: {
         skin: 'skin type is not correct',
@@ -100,6 +106,7 @@ router.post('/addpatient', auth.required, (req, res, next) => {
     });
 
     const newPatient = {
+      "doctor":req.body.doctor,
       "username": username,
       "password": password,
       "firstname": req.body.firstname,
